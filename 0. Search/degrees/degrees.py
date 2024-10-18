@@ -92,8 +92,56 @@ def shortest_path(source, target):
     If no possible path, returns None.
     """
 
-    # TODO
+    node = Node(source, None, None)
+    frontier = QueueFrontier()
+    frontier.add(node)
+    result = []
+    visited = [] #list of visited id's
+    visited.append(node)
+
+    while frontier.empty() == False :
+        node = frontier.remove()
+        visited.append(node)
+        if node.id == target:
+            break
+        
+        neighbors = neighbors_for_person(node.id)
+        for movie_id, person_id in neighbors:
+            if person_id not in visited:
+                frontier.add(Node(person_id, node.id, movie_id))
+    
+
+    if frontier.empty():
+        return None
+
+    print (f"{len(visited)}")
+    path = [(visited[-1].movieId, visited[-1].id)]
+    parent = visited[-1].parentId
+    visited[::-1]
+    copy = visited[1:]
+    for n in copy:
+        if n.movieId == None: break
+        print (f"id:{n.id}   parent:{parent}")
+        if n.id == parent:
+            path.insert(0, (n.movieId, n.id))
+            parent = n.parentId
+            print (f"parent:{parent}")
+
+    for x, y in path:
+        print (f"filme:{x}  id:{y}")
+
+    return path
+
+    parentId = node.parentId
+    result = []
+    while parentId != None:
+        result.append((node.movieId,node.id))   
+    
     raise NotImplementedError
+
+def resolution(result, parentId):
+    if parentId == None:
+        return result
 
 
 def person_id_for_name(name):

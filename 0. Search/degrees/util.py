@@ -1,9 +1,14 @@
-class Node():
+"""class Node():
     def __init__(self, state, parent, action):
         self.state = state
         self.parent = parent
         self.action = action
-
+"""
+class Node():
+    def __init__(self, id, parentId, movieId):
+        self.id = id
+        self.parentId = parentId
+        self.movieId = movieId
 
 class StackFrontier():
     def __init__(self):
