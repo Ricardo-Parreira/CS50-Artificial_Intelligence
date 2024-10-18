@@ -107,28 +107,30 @@ def shortest_path(source, target):
         
         neighbors = neighbors_for_person(node.id)
         for movie_id, person_id in neighbors:
-            if person_id not in visited:
+            if (person_id, node.id, movie_id) not in visited and person_id != node.id:
                 frontier.add(Node(person_id, node.id, movie_id))
     
 
     if frontier.empty():
         return None
 
-    print (f"{len(visited)}")
+
     path = [(visited[-1].movieId, visited[-1].id)]
     parent = visited[-1].parentId
     visited[::-1]
-    copy = visited[1:]
-    for n in copy:
-        if n.movieId == None: break
-        print (f"id:{n.id}   parent:{parent}")
+
+
+    for n in visited:
+        print (f"id:{n.id}   parent:{parent}    movieID:{n.movieId}")
+        #if n.movieId == None: break
+        
         if n.id == parent:
             path.insert(0, (n.movieId, n.id))
             parent = n.parentId
-            print (f"parent:{parent}")
 
-    for x, y in path:
-        print (f"filme:{x}  id:{y}")
+
+    #for x, y in path:
+     #   print (f"filme:{x}  id:{y}")
 
     return path
 
