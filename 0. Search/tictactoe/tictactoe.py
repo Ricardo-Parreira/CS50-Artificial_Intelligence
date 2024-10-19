@@ -63,7 +63,44 @@ def winner(board):
     """
     Returns the winner of the game, if there is one.
     """
-    raise NotImplementedError
+    aux_set = set()
+
+    # horizontally
+    for i in range(3):
+        if all(x==X for x in board[i]):
+            return X
+        if all(x==O for x in board[i]):
+            return X
+
+    #vertically
+    for j in range(3):
+        for i in range(3):
+            aux_set.add(board[i][j])
+        if len(aux_set) == 1:
+            element = aux_set.pop()
+            if element != EMPTY:
+                return element
+        aux_set.clear()
+
+    #diagonally
+    for i in range(3):
+       aux_set.add(board[i][i])
+    if len(aux_set) == 1:
+        element = aux_set.pop()
+        if element != EMPTY:
+            return element
+    aux_set.clear()
+
+    for i in range(3):
+       aux_set.add(board[2-i][i])
+    if len(aux_set) == 1:
+        element = aux_set.pop()
+        if element != EMPTY:
+            return element
+    aux_set.clear()
+
+
+    return None
 
 
 def terminal(board):
