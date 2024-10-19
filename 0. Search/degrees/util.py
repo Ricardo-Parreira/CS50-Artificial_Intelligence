@@ -5,9 +5,9 @@
         self.action = action
 """
 class Node():
-    def __init__(self, id, parentId, movieId):
+    def __init__(self, id, parent, movieId):
         self.id = id
-        self.parentId = parentId
+        self.parent = parent #node of the parent node
         self.movieId = movieId
 
 class StackFrontier():
