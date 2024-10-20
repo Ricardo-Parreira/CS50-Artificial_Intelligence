@@ -17,6 +17,13 @@ def initial_state():
             [EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, EMPTY]]
 
+def new_copy(board):
+    new_board = []
+    for i in range(3):
+        new_board.append([])
+        for j in range(3):
+            new_board[i].append(board[i][j])
+    return new_board
 
 def player(board):
     """
@@ -47,15 +54,15 @@ def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
     """
-    new = board
-    i, j = action
+    new_board = new_copy(board)
+    (i, j) = action
     if i>=3 or i<0 or j>=3 or j<0: #out of bounds
         raise NameError('Action is out of bounds')
-    if board[i][j] != EMPTY:
+    if board[i][j] == O or board[i][j] == X:
         raise NameError('Spot is taken')
 
-    new[i][j] = player(board)
-    return new
+    new_board[i][j] = player(new_board)
+    return new_board
 
 
 
@@ -67,10 +74,13 @@ def winner(board):
 
     # horizontally
     for i in range(3):
-        if all(x==X for x in board[i]):
-            return X
-        if all(x==O for x in board[i]):
-            return X
+        for j in range(3):
+            aux_set.add(board[i][j])
+        if len(aux_set) == 1:
+            element = aux_set.pop()
+            if element != EMPTY:
+                return element
+        aux_set.clear()
 
     #vertically
     for j in range(3):
@@ -122,17 +132,87 @@ def utility(board):
     """
     win = winner(board)
 
-    if len(actions(board)) == 0:
-        return 0
+    if win == O:
+        return -1
+    if win == X:
+        return 1
     else:
-        if win == O:
-            return -1
-        if win == X:
-            return 1
+        return 0
 
 
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    raise NotImplementedError
+    acoes = actions(board)
+    if terminal(board):
+        return None
+    if len(acoes) == 1:
+        return acoes.pop()
+
+
+    best = None
+
+    new_board = new_copy(board)
+    if player(new_board) == X:
+        maximo = float('-inf')
+        for action in acoes:
+
+            new_board = result(board, action)
+            if terminal(new_board):     #se o move causar o fim do jogo significa que ganhámos
+                return action
+            score = minimizer(new_board, maximo)
+            if score > maximo:
+                best = action
+                maximo = score
+
+
+    if player(board) == O:
+        minimo = float('inf')
+        for action in acoes:
+            new_board = result(board, action)
+            if terminal(new_board):
+                return action
+            score = maximizer(new_board, minimo)
+            if score < minimo:
+                best = action
+
+                (x,y) = best
+
+                minimo = score
+
+    return best
+
+
+def maximizer(board, maximo):
+    if terminal(board):
+
+        return utility(board)
+
+    maximo = float('-inf')
+    for action in actions(board):
+        (x,y) = action
+        new_board = new_copy(board)
+        new_board = result(board,action)
+        maximo = max(maximo, minimizer(new_board, maximo))
+
+    return maximo
+
+def minimizer(board, minimo):
+    if terminal(board):
+        return utility(board)
+
+    minimo = float('inf')
+    for action in actions(board):
+        new_board = new_copy(board)
+        new_board = result(board,action)
+        minimo = min(minimo, maximizer(new_board, minimo))
+
+    return minimo
+
+
+
+
+
+
+
