@@ -1,3 +1,4 @@
+import copy
 import itertools
 import random
 
@@ -166,6 +167,7 @@ class MinesweeperAI():
         for sentence in self.knowledge:
             sentence.mark_mine(cell)
 
+
     def mark_safe(self, cell):
         """
         Marks a cell as safe, and updates all knowledge
@@ -181,16 +183,77 @@ class MinesweeperAI():
         safe cell, how many neighboring cells have mines in them.
 
         This function should:
-            1) mark the cell as a move that has been made
-            2) mark the cell as safe
-            3) add a new sentence to the AI's knowledge base
-               based on the value of `cell` and `count`
-            4) mark any additional cells as safe or as mines
-               if it can be concluded based on the AI's knowledge base
-            5) add any new sentences to the AI's knowledge base
-               if they can be inferred from existing knowledge
-        """
-        raise NotImplementedError
+        1) mark the cell as a move that has been made"""
+        self.moves_made.add(cell)
+
+        #2) mark the cell as safe
+        self.mark_safe(cell)
+
+        #3) add a new sentence to the AI's knowledge base
+         #  based on the value of `cell` and `count`
+        (x, y) = cell
+        neighbors = set()
+        for i in [-1, 0, 1]:
+            for j in [-1,  0, 1]:
+                if i == j == 0:
+                    continue
+                if x+i >= 0 and x+i < self.height and y+j >= 0 and y+j < self.width:
+                    new_cell = (x+i, y+j)
+                    if new_cell in self.safes:
+                        continue
+                    if new_cell in self.mines:
+                        count -= 1
+                        continue
+                    neighbors.add(new_cell)
+
+        sentence = Sentence(neighbors, count)
+        self.knowledge.append(sentence)
+
+        #4) mark any additional cells as safe or as mines
+         #  if it can be concluded based on the AI's knowledge base
+        self.check_knowledge()
+
+
+        #5) add any new sentences to the AI's knowledge base
+         #  if they can be inferred from existing knowledge
+        new_sentences = []
+        for sentenceA in self.knowledge: #i could iterate only through half of the list for i and j but i am not sure it would work
+            for sentenceB in self.knowledge:
+                if sentenceA == sentenceB: continue
+                if sentenceB.cells.issubset(sentenceA.cells):
+                    subset = sentenceA.cells - sentenceB.cells
+                    subcount = sentenceA.count - sentenceB.count
+                    new_sentence = Sentence(subset, subcount)
+                    for cell in new_sentence.known_mines():
+                        self.mark_mine(cell)
+                    for cell in new_sentence.known_safes():
+                        self.mark_safe(cell)
+
+                    if new_sentence not in self.knowledge:
+                        new_sentences.append(new_sentence)
+
+        self.knowledge.extend(new_sentences) #have to add the sentences out of the loop
+
+    def check_knowledge(self):
+        knowledge_cpy = copy.deepcopy(self.knowledge)
+
+        for sentence in knowledge_cpy:
+            if len(sentence.cells) == 0:
+                try:
+                    self.knowledge.remove(sentence)
+                except ValueError:
+                    pass
+
+            safe_cells = sentence.known_safes().copy()
+            mine_cells = sentence.known_mines().copy()
+
+            for cell in safe_cells:
+                self.mark_safe(cell)
+                self.check_knowledge()
+            for cell in mine_cells:
+                self.mark_mine(cell)
+                self.check_knowledge()
+
 
     def make_safe_move(self):
         """
