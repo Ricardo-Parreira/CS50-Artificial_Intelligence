@@ -38,7 +38,7 @@ PROBS = {
 
 
 def main():
-
+    """"
     # Check for proper usage
     if len(sys.argv) != 2:
         sys.exit("Usage: python heredity.py data.csv")
@@ -92,6 +92,13 @@ def main():
             for value in probabilities[person][field]:
                 p = probabilities[person][field][value]
                 print(f"    {value}: {p:.4f}")
+    """
+    people = {
+      'Harry': {'name': 'Harry', 'mother': 'Lily', 'father': 'James', 'trait': None},
+      'James': {'name': 'James', 'mother': None, 'father': None, 'trait': True},
+      'Lily': {'name': 'Lily', 'mother': None, 'father': None, 'trait': False}
+    }
+    print(joint_probability(people, {"Harry"}, {"James"}, {"James"}))
 
 
 def load_data(filename):
@@ -139,7 +146,101 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone in set `have_trait` has the trait, and
         * everyone not in set` have_trait` does not have the trait.
     """
-    raise NotImplementedError
+    probability = 1
+
+    probabilities = {
+        person: {
+            "gene": {
+                2: 0,
+                1: 0,
+                0: 0
+            },
+            "trait": {
+                True: 0,
+                False: 0
+            }
+        }
+        for person in people
+    }
+
+    #fill the probabilities dict with the parents info we can deduct from PROBS
+    for person in people:
+        if people[person]["mother"] is None:
+            if person in one_gene :
+                probability *= PROBS["gene"][1]
+                probabilities[person]["gene"][1] = PROBS["gene"][1]
+                if person in have_trait:
+                    probability *= PROBS["trait"][1][True]
+                    probabilities[person]["trait"][True] = PROBS["trait"][1][True]
+                else :
+                    probability *= PROBS["trait"][1][False]
+                    probabilities[person]["trait"][False] = PROBS["trait"][1][False]
+
+            elif person in two_genes :
+                probability *= PROBS["gene"][2]
+                probabilities[person]["gene"][2] = PROBS["gene"][2]
+                if person in have_trait:
+                    probability *= PROBS["trait"][2][True]
+                    print(probability)
+                    probabilities[person]["trait"][True] = PROBS["trait"][2][True]
+                else :
+                    probability *= PROBS["trait"][2][False]
+                    probabilities[person]["trait"][False] = PROBS["trait"][2][False]
+
+            else :
+                probability *= PROBS["gene"][0]
+                probabilities[person]["gene"][0] = PROBS["gene"][0]
+                if person in have_trait:
+                    probability *= PROBS["trait"][0][True]
+                    probabilities[person]["trait"][True] = PROBS["trait"][0][True]
+                else:
+                    probability *= PROBS["trait"][0][False]
+                    print(probability)
+                    probabilities[person]["trait"][False] = PROBS["trait"][0][False]
+
+    for person in people:
+        if people[person]['mother'] is not None:
+            if person in one_gene :
+                if probabilities[people[person]["mother"]]["gene"][0]!=0:
+                    mae = 0.01
+                elif probabilities[people[person]["mother"]]["gene"][1]!=0:
+                    mae = 0.5
+                else:
+                    mae = 0.99
+
+                if probabilities[people[person]["father"]]["gene"][0]!=0:
+                    pai = 0.01
+                elif probabilities[people[person]["father"]]["gene"][1]!=0:
+                    pai = 0.5
+                else:
+                    pai = 0.99
+                print("mae: ", mae)
+                print("pai: ", pai)
+                gotit = mae * (1-pai) + (1-mae) * pai
+                print("got it: ", gotit)
+                probability *= gotit
+                print(probability)
+                if person in have_trait:
+                    probability *= PROBS["trait"][1][True]
+                else :
+                    probability *= PROBS["trait"][1][False]
+
+            elif person in two_genes :
+                probability *= PROBS["gene"][2]
+                if person in have_trait:
+                    probability *= PROBS["trait"][2][True]
+                else :
+                    probability *= PROBS["trait"][2][False]
+
+            else :
+                probability *= PROBS["gene"][0]
+                if person in have_trait:
+                    probability *= PROBS["trait"][0][True]
+                else:
+                    probability *= PROBS["trait"][0][False]
+
+    return probability
+
 
 
 def update(probabilities, one_gene, two_genes, have_trait, p):
