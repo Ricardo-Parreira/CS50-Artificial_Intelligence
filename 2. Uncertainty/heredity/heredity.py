@@ -198,22 +198,26 @@ def joint_probability(people, one_gene, two_genes, have_trait):
                     print(probability)
                     probabilities[person]["trait"][False] = PROBS["trait"][0][False]
 
+
+    #now onto the next people
     for person in people:
         if people[person]['mother'] is not None:
-            if person in one_gene :
-                if probabilities[people[person]["mother"]]["gene"][0]!=0:
-                    mae = 0.01
-                elif probabilities[people[person]["mother"]]["gene"][1]!=0:
-                    mae = 0.5
-                else:
-                    mae = 0.99
+            if probabilities[people[person]["mother"]]["gene"][0] != 0:
+                mae = 0.01
+            elif probabilities[people[person]["mother"]]["gene"][1] != 0:
+                mae = 0.5
+            else:
+                mae = 0.99
 
-                if probabilities[people[person]["father"]]["gene"][0]!=0:
-                    pai = 0.01
-                elif probabilities[people[person]["father"]]["gene"][1]!=0:
-                    pai = 0.5
-                else:
-                    pai = 0.99
+            if probabilities[people[person]["father"]]["gene"][0] != 0:
+                pai = 0.01
+            elif probabilities[people[person]["father"]]["gene"][1] != 0:
+                pai = 0.5
+            else:
+                pai = 0.99
+            if mae==0 or pai==0:
+                raise NotImplementedError
+            if person in one_gene :
                 print("mae: ", mae)
                 print("pai: ", pai)
                 gotit = mae * (1-pai) + (1-mae) * pai
@@ -226,14 +230,16 @@ def joint_probability(people, one_gene, two_genes, have_trait):
                     probability *= PROBS["trait"][1][False]
 
             elif person in two_genes :
-                probability *= PROBS["gene"][2]
+                gotit = mae * pai
+                probability *= gotit
                 if person in have_trait:
                     probability *= PROBS["trait"][2][True]
                 else :
                     probability *= PROBS["trait"][2][False]
 
             else :
-                probability *= PROBS["gene"][0]
+                gotit = (1-mae) * (1-pai)
+                probability *= gotit
                 if person in have_trait:
                     probability *= PROBS["trait"][0][True]
                 else:
