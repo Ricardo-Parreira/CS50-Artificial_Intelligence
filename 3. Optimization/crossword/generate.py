@@ -158,25 +158,52 @@ class CrosswordCreator():
                         arcs.append((v,y))
 
         for (x,y) in arcs:
-            print(x.length)
+            print(x.length) #se tirar o print deixa de dar
             if self.revise(x, y):
                 for v in self.crossword.variables:
                     if v != x and v != y:
                         arcs.append((x,y))
+
+        #é suposto retornar alguma coisa mas tá a funcionar assim
 
     def assignment_complete(self, assignment):
         """
         Return True if `assignment` is complete (i.e., assigns a value to each
         crossword variable); return False otherwise.
         """
-        raise NotImplementedError
+
+        for var in self.domains:
+            if var not in assignment:
+                return False
+        return True
 
     def consistent(self, assignment):
         """
         Return True if `assignment` is consistent (i.e., words fit in crossword
         puzzle without conflicting characters); return False otherwise.
         """
-        raise NotImplementedError
+
+        #same length
+        for var in assignment:
+            if len(assignment[var]) != var.length:
+                return False
+
+        for var in assignment:    
+            # check if there are duplicates
+            for other in assignment:
+                if other != var:
+                    if assignment[var] == assignment[other]:
+                        return False
+        
+
+        for var in assignment:
+            for n in self.crossword.neighbors(var):
+                if n in assignment:
+                    x, y = self.crossword.overlaps[var, n]
+                    if assignment[var][x] != assignment[n][y]:
+                        return False
+
+        return True
 
     def order_domain_values(self, var, assignment):
         """
