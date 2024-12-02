@@ -1,5 +1,5 @@
 import sys
-from copy import deepcopy
+import copy
 
 from crossword import *
 
@@ -100,7 +100,7 @@ class CrosswordCreator():
         (Remove any values that are inconsistent with a variable's unary
          constraints; in this case, the length of the word.)
         """
-        domains_copy = deepcopy(self.domains)
+        domains_copy = copy.deepcopy(self.domains)
 
         for domain in domains_copy:
             length = domain.length
@@ -120,7 +120,25 @@ class CrosswordCreator():
         Return True if a revision was made to the domain of `x`; return
         False if no revision was made.
         """
-        raise NotImplementedError
+        domains_copy = copy.deepcopy(self.domains)
+
+        revised = False
+
+        try:
+            xover, yover = self.crossword.overlaps[x, y]
+            for wordx in domains_copy[x]:
+                kill = True
+                for wordy in domains_copy[y]:
+                    if xover is not None:
+                        if wordx[xover] == wordy[yover]: #PUTA MERDA
+                            kill = False
+                if kill == True:
+                    self.domains[x].remove(wordx)
+                    revised = True
+        except:
+            return revised
+
+        return revised
 
     def ac3(self, arcs=None):
         """
@@ -131,7 +149,20 @@ class CrosswordCreator():
         Return True if arc consistency is enforced and no domains are empty;
         return False if one or more domains end up empty.
         """
-        raise NotImplementedError
+
+        if arcs is None:
+            arcs = list()
+            for v in self.crossword.variables:
+                for y in self.crossword.variables:
+                    if v != y:
+                        arcs.append((v,y))
+
+        for (x,y) in arcs:
+            print(x.length)
+            if self.revise(x, y):
+                for v in self.crossword.variables:
+                    if v != x and v != y:
+                        arcs.append((x,y))
 
     def assignment_complete(self, assignment):
         """
