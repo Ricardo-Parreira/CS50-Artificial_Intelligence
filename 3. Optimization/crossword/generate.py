@@ -205,6 +205,23 @@ class CrosswordCreator():
 
         return True
 
+    def degree(self, assignment, var, word):
+
+        count = 0
+        for n in self.crossword.neighbors(var):
+            values = self.domains[n] if isinstance(self.domains[n], set) else [self.domains[n]]
+            for nword in values:
+                overlap = self.crossword.overlaps[var, n]
+                if overlap is None:
+                    continue
+                x, y = overlap
+                if word[x] != nword[y]:
+                    count += 1
+
+        return count
+
+
+
     def order_domain_values(self, var, assignment):
         """
         Return a list of values in the domain of `var`, in order by
@@ -212,7 +229,13 @@ class CrosswordCreator():
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
         """
-        raise NotImplementedError
+        values = self.domains[var] if isinstance(self.domains[var], set) else [self.domains[var]]
+        sorted_values = sorted(
+            values,
+            key=lambda word: self.degree(assignment, var, word),
+
+        )
+        return sorted_values
 
     def select_unassigned_variable(self, assignment):
         """
@@ -222,7 +245,14 @@ class CrosswordCreator():
         degree. If there is a tie, any of the tied variables are acceptable
         return values.
         """
-        raise NotImplementedError
+        min = 5000
+        for var in self.domains:
+            if var not in assignment:
+                if len(self.domains[var]) <= min:
+                    min = len(self.domains[var])
+                    variable = var
+
+        return variable
 
     def backtrack(self, assignment):
         """
