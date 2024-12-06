@@ -245,25 +245,34 @@ class CrosswordCreator():
         degree. If there is a tie, any of the tied variables are acceptable
         return values.
         """
-        min = 5000
+        mini = 5000
+        variable = None
         for var in self.domains:
             if var not in assignment:
-                if len(self.domains[var]) <= min:
-                    min = len(self.domains[var])
+                if len(self.domains[var]) <= mini:
+                    mini = len(self.domains[var])
                     variable = var
 
         return variable
 
     def backtrack(self, assignment):
         """
-        Using Backtracking Search, take as input a partial assignment for the
-        crossword and return a complete assignment if possible to do so.
-
-        `assignment` is a mapping from variables (keys) to words (values).
-
+        Using backtracking search, return a complete assignment if possible.
         If no assignment is possible, return None.
         """
-        raise NotImplementedError
+        if self.assignment_complete(assignment):
+            return assignment
+        var = self.select_unassigned_variable(assignment)
+        for value in self.order_domain_values(var, assignment):
+            assignment[var] = value
+            if self.consistent(assignment):
+                result = self.backtrack(assignment)
+                if result is not None:
+                    return result
+            del assignment[var]
+
+        return None
+
 
 
 def main():
